@@ -1,0 +1,9 @@
+﻿node_modules/
+dist/
+.vscode/
+.env
+.env.*
+npm-debug.log*
+pnpm-lock.yaml
+yarn.lock
+.DS_Store

@@ -1,46 +1,61 @@
-import { useEffect, useState } from 'react';
-import { getStats } from '../lib/api';
+// src/pages/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import type { ReactNode } from "react";
+import Login from "./Login";
+import Dashboard from "./Dashboard";
 
-const POLL_MS = Number(import.meta.env.VITE_POLL_MS ?? 30000); // default 30s
+// --- Guard หน้า admin แบบเบา ๆ ---
+const RequireAdmin = ({ children }: { children: ReactNode }) => {
+  const code = localStorage.getItem("admin_code");
+  return code ? <>{children}</> : <Navigate to="/login" replace />;
+};
 
-export default function App() {
-  const [data, setData] = useState<any>(null);
-  const [error, setError] = useState<string>('');
-
-  useEffect(() => {
-    let alive = true;
-
-    const load = async () => {
-      try {
-        const json = await getStats('demo');
-        if (alive) { setData(json); setError(''); }
-      } catch (e: any) {
-        if (alive) setError(e?.message || 'Failed to fetch');
-      }
-    };
-
-    load();
-    const id = window.setInterval(load, POLL_MS);
-
-    return () => { alive = false; window.clearInterval(id); };
-  }, []);
-
+// --- Layout หลัก + ปุ่ม Logout ---
+function AppLayout({ children }: { children: ReactNode }) {
+  const onLogout = () => {
+    localStorage.removeItem("admin_code");
+    window.location.href = "/login";
+  };
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
-      <div className="text-xl font-bold mb-4">แผงควบคุมระบบ BN9</div>
-
-      {error && (
-        <div className="text-red-400 mb-4">Error: {error}</div>
-      )}
-
-      <pre className="bg-zinc-900 rounded-xl p-4 overflow-auto">
-        {JSON.stringify(data, null, 2)}
-      </pre>
-
-      <div className="text-right text-xs mt-4 opacity-70">
-        BN9 System ©2025 | SAMROENG .SAEHOR
-      </div>
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-neutral-950/70 backdrop-blur px-6 py-3">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="text-lg font-semibold">BN9 Dashboard</div>
+          <div className="flex items-center gap-4">
+            <span className="text-xs opacity-70">V2</span>
+            <button
+              onClick={onLogout}
+              className="text-xs opacity-70 hover:opacity-100 underline"
+            >
+              ออกจากระบบ
+            </button>
+          </div>
+        </div>
+      </header>
+      <main className="max-w-6xl mx-auto px-6 py-6">{children}</main>
     </div>
+  );
+}
+
+// --- App (ตัวเดียวเท่านั้น) ---
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <RequireAdmin>
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            </RequireAdmin>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

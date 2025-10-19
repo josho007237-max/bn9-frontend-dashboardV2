@@ -1,20 +1,24 @@
 // src/lib/api.ts
-// ฟังก์ชันเรียก Backend โดยอิงค่า .env ฝั่ง FE (VITE_API_BASE, VITE_ADMIN_CODE)
+// Utilities เรียก Backend โดยอ่าน .env ฝั่ง FE (VITE_API_BASE, VITE_ADMIN_CODE)
+// และ fallback จาก localStorage.admin_code
+// ---------- Helpers ----------
 function getBase() {
     const base = import.meta.env.VITE_API_BASE;
     if (!base)
         throw new Error("VITE_API_BASE is missing in frontend .env");
-    return base.replace(/\/+$/, "");
+    return String(base).replace(/\/+$/, "");
 }
 function getAdminCode() {
-    return localStorage.getItem("admin_code") ?? import.meta.env.VITE_ADMIN_CODE ?? "";
+    return (localStorage.getItem("admin_code") ??
+        import.meta.env.VITE_ADMIN_CODE ??
+        "");
 }
 async function http(path, init) {
     const res = await fetch(`${getBase()}${path}`, {
         ...init,
         headers: {
-            "x-admin-code": getAdminCode(),
             "Content-Type": "application/json",
+            "x-admin-code": getAdminCode(),
             ...(init?.headers || {}),
         },
     });
@@ -24,6 +28,7 @@ async function http(path, init) {
     }
     return res.json();
 }
+// ---------- APIs ----------
 /** ดึงสถิติ 24 ชั่วโมงล่าสุดสำหรับ tenant */
 export async function getStats(tenant) {
     return http(`/api/stats/${encodeURIComponent(tenant)}`);
@@ -35,7 +40,7 @@ export async function postCase(payload) {
         body: JSON.stringify(payload),
     });
 }
-/** ping สุขภาพ (เผื่อใช้ debug) */
+/** ping สุขภาพ (debug) */
 export async function pingHealth() {
     return http(`/api/health`);
 }

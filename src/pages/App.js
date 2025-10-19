@@ -1,22 +1,22 @@
-import { Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 // src/pages/App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./Login";
-import Dashboard from "./Dashboard";
-// --- Guard หน้า admin แบบเบา ๆ ---
-const RequireAdmin = ({ children }) => {
-    const code = localStorage.getItem("admin_code");
-    return code ? _jsx(_Fragment, { children: children }) : _jsx(Navigate, { to: "/login", replace: true });
-};
-// --- Layout หลัก + ปุ่ม Logout ---
-function AppLayout({ children }) {
-    const onLogout = () => {
-        localStorage.removeItem("admin_code");
-        window.location.href = "/login";
-    };
-    return (_jsxs("div", { className: "min-h-screen bg-neutral-950 text-white", children: [_jsx("header", { className: "sticky top-0 z-10 border-b border-white/10 bg-neutral-950/70 backdrop-blur px-6 py-3", children: _jsxs("div", { className: "max-w-6xl mx-auto flex items-center justify-between", children: [_jsx("div", { className: "text-lg font-semibold", children: "BN9 Dashboard" }), _jsxs("div", { className: "flex items-center gap-4", children: [_jsx("span", { className: "text-xs opacity-70", children: "V2" }), _jsx("button", { onClick: onLogout, className: "text-xs opacity-70 hover:opacity-100 underline", children: "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A" })] })] }) }), _jsx("main", { className: "max-w-6xl mx-auto px-6 py-6", children: children })] }));
-}
-// --- App (ตัวเดียวเท่านั้น) ---
+import { useEffect, useState } from "react";
+import { getStats } from "../lib/api"; // ปรับเป็น "@/lib/api" ถ้าใช้งาน alias
 export default function App() {
-    return (_jsx(BrowserRouter, { children: _jsxs(Routes, { children: [_jsx(Route, { path: "/login", element: _jsx(Login, {}) }), _jsx(Route, { path: "/", element: _jsx(RequireAdmin, { children: _jsx(AppLayout, { children: _jsx(Dashboard, {}) }) }) }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/", replace: true }) })] }) }));
+    const [data, setData] = useState(null);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        getStats("bn9")
+            .then(setData)
+            .catch((e) => setError(String(e)));
+    }, []);
+    if (error)
+        return _jsxs("div", { className: "p-4 text-red-600", children: ["Error: ", error] });
+    if (!data)
+        return _jsx("div", { className: "p-4", children: "Loading\u2026" });
+    const m = data.metrics;
+    return (_jsxs("div", { className: "p-6 space-y-4", children: [_jsx("h1", { className: "text-xl font-semibold", children: "BN9 Dashboard" }), _jsxs("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4", children: [_jsx(StatCard, { title: "\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49", value: m.totalMessages }), _jsx(StatCard, { title: "\u0E25\u0E39\u0E01\u0E04\u0E49\u0E32\u0E43\u0E2B\u0E21\u0E48", value: m.newCustomers }), _jsx(StatCard, { title: "\u0E40\u0E23\u0E48\u0E07\u0E14\u0E48\u0E27\u0E19", value: m.urgent }), _jsx(StatCard, { title: "\u0E0B\u0E49\u0E33\u0E43\u0E19 15 \u0E19\u0E32\u0E17\u0E35", value: m.duplicateWithin15m })] })] }));
+}
+function StatCard({ title, value }) {
+    return (_jsxs("div", { className: "rounded-xl border p-4", children: [_jsx("div", { className: "text-sm text-gray-500", children: title }), _jsx("div", { className: "text-2xl font-bold", children: value ?? 0 })] }));
 }

@@ -2,6 +2,5 @@ import { jsx as _jsx } from "react/jsx-runtime";
 // src/main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./pages/App"; // ✅ ชี้ไปที่ pages/App
-import "./styles/tailwind.css"; // ✅ ถ้าไฟล์ Tailwind ของพี่อยู่ที่นี่ (ตามรูป)
+import App from "./pages/App";
 ReactDOM.createRoot(document.getElementById("root")).render(_jsx(React.StrictMode, { children: _jsx(App, {}) }));

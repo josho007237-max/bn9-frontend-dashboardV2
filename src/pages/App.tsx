@@ -1,61 +1,40 @@
 // src/pages/App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import type { ReactNode } from "react";
-import Login from "./Login";
-import Dashboard from "./Dashboard";
+import { useEffect, useState } from "react";
+import { getStats, type StatsResponse } from "../lib/api"; // ปรับเป็น "@/lib/api" ถ้าใช้งาน alias
 
-// --- Guard หน้า admin แบบเบา ๆ ---
-const RequireAdmin = ({ children }: { children: ReactNode }) => {
-  const code = localStorage.getItem("admin_code");
-  return code ? <>{children}</> : <Navigate to="/login" replace />;
-};
+export default function App() {
+  const [data, setData] = useState<StatsResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-// --- Layout หลัก + ปุ่ม Logout ---
-function AppLayout({ children }: { children: ReactNode }) {
-  const onLogout = () => {
-    localStorage.removeItem("admin_code");
-    window.location.href = "/login";
-  };
+  useEffect(() => {
+    getStats("bn9")
+      .then(setData)
+      .catch((e) => setError(String(e)));
+  }, []);
+
+  if (error) return <div className="p-4 text-red-600">Error: {error}</div>;
+  if (!data) return <div className="p-4">Loading…</div>;
+
+  const m = data.metrics;
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-neutral-950/70 backdrop-blur px-6 py-3">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="text-lg font-semibold">BN9 Dashboard</div>
-          <div className="flex items-center gap-4">
-            <span className="text-xs opacity-70">V2</span>
-            <button
-              onClick={onLogout}
-              className="text-xs opacity-70 hover:opacity-100 underline"
-            >
-              ออกจากระบบ
-            </button>
-          </div>
-        </div>
-      </header>
-      <main className="max-w-6xl mx-auto px-6 py-6">{children}</main>
+    <div className="p-6 space-y-4">
+      <h1 className="text-xl font-semibold">BN9 Dashboard</h1>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard title="ข้อความวันนี้" value={m.totalMessages} />
+        <StatCard title="ลูกค้าใหม่" value={m.newCustomers} />
+        <StatCard title="เร่งด่วน" value={m.urgent} />
+        <StatCard title="ซ้ำใน 15 นาที" value={m.duplicateWithin15m} />
+      </div>
     </div>
   );
 }
 
-// --- App (ตัวเดียวเท่านั้น) ---
-export default function App() {
+function StatCard({ title, value }: { title: string; value: number }) {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={
-            <RequireAdmin>
-              <AppLayout>
-                <Dashboard />
-              </AppLayout>
-            </RequireAdmin>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="rounded-xl border p-4">
+      <div className="text-sm text-gray-500">{title}</div>
+      <div className="text-2xl font-bold">{value ?? 0}</div>
+    </div>
   );
 }
 

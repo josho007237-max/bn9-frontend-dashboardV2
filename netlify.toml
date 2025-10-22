@@ -1,0 +1,26 @@
+[context.production]
+  [[redirects]]
+    from = "/api/*"
+    to   = "https://bn9-backend-v2-production-production.up.railway.app/api/:splat"
+    status = 200
+
+[context.branch-deploy]   # สำหรับสาขา develop = Staging
+  [[redirects]]
+    from = "/api/*"
+    to   = "https://bn9-backend-v2-production-fe5c.up.railway.app/api/:splat"
+    status = 200
+
+[context.deploy-preview]  # Preview จาก PR → ชี้ Staging
+  [[redirects]]
+    from = "/api/*"
+    to   = "https://bn9-backend-v2-production-fe5c.up.railway.app/api/:splat"
+    status = 200
+
+
+# PR preview → ให้ชี้ไป Staging เหมือนกัน
+[context.deploy-preview]
+  [[redirects]]
+    from = "/api/*"
+    to   = "https://bn9-backend-v2-production-fe5c.up.railway.app/api/:splat"
+    status = 200
+

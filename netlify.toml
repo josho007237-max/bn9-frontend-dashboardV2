@@ -1,0 +1,13 @@
+# netlify.toml (วาง redirects ไว้ระดับบนสุด)
+
+# ส่งคำขอ /api/* ไปที่ Backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://bn9-backend-v2-production-production.up.railway.app/:splat"
+  status = 200
+
+# (แนะนำสำหรับ SPA) ให้เส้นทางอื่น ๆ วิ่งเข้า index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

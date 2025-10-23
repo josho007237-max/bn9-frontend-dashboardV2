@@ -1,0 +1,23 @@
+name: Node.js CI (self-hosted)
+
+on:
+  pull_request:
+  push:
+    branches: [ develop ]
+
+jobs:
+  build:
+    # ให้ตรงกับ labels ของ runner คุณ (ดูในหน้า Runners เห็นว่า self-hosted / Windows / X64)
+    runs-on: [self-hosted, Windows, X64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ติดตั้ง Node ตามที่ต้องการ (เลือก 18/20/22 ได้)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
